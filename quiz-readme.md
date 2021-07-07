@@ -1,5 +1,7 @@
 
-Week 4 Web API "CODE QUIZ" Homework by Luke Cole
+[Week 4 Web API "CODE QUIZ" Homework](https://lukeajcole.github.io/W4_WebAPI_CODEQUIZ_LAJC/index.html)
+
+ by Luke Cole
 
 ![Website image](Website.PNG)
 
