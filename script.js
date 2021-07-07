@@ -1,3 +1,4 @@
+    // Set up the JSON object for questions and answers
     var questions = [{
         question: "What is HTML?",
         choices: ['Hypnotic Text Made Legible', 'Hard Test Method Lookup', 'Hyper Text Markup Language', 'Happy Turtles March Last', 'Hydraulic Tanks Must Leak'],
@@ -23,76 +24,81 @@
 var questionCounter = 0; //Tracks question number
 var selections = []; //Array containing user choices
 var quiz = document.getElementById('quiz'); //Quiz div object
-var choices = document.getElementById("qList"); //Next Button
+var choices = document.getElementById("qList"); //List of Answer Buttons
 var startBtn = document.getElementById("start"); //Start Over Button
-
+var timeBar = document.getElementById("myBar"); //Progress Timer Bar
+var interval;
 // var localScores = localStorage.setItem("scores") = {records:[]};
 
-
-startBtn.style.display = "block";
-
-// Display initial question
-startBtn.addEventListener('click',function(event){
-    startBtn.style.display = "none";
-      displayNext();
+// Click handler for the 'Start' button
+startBtn.addEventListener('click', function (event) {
+  event.preventDefault();
+  event.stopPropagation();
+  interval = startTimer(10);
+  questionCounter = 0;
+  selections = [];
+  var scoreEl = document.getElementById("results");
+  while (scoreEl !== null) {
+    scoreEl.remove();
+    var scoreEl = document.getElementById("results");
+  } ;
+  displayNext();
+  startBtn.style.display = "none";
 });
     
-    // Click handler for the button clicks
+// Click handler for the answer button clicks
 quiz.addEventListener('click', function (event) {
       event.preventDefault();
       var targetBtn = event.target;
       var selection = targetBtn.getAttribute("data-index");
-      // If no user selection, progress is stopped
+      // Only move forward if the user selects a button with the "data-index" attribute
       if (selection == null) {
       } else {
-        selections[questionCounter] = selection;
-        questionCounter++;
+        selections[questionCounter++] = selection; // get the user selection from the target object and increment the counter
         displayNext();
       }
 });
-    
-// Click handler for the 'Start' button
-startBtn.addEventListener('click', function (event) {
-      event.preventDefault();
-      event.stopPropagation();
 
-      questionCounter = 0;
-      selections = [];
-      var scoreEl = document.getElementById("score");
-      while (scoreEl !== null) {
-        scoreEl.remove();
-        var scoreEl = document.getElementById("score");
-      } ;
-      displayNext();
-      startBtn.style.display = "none";
-});
+// Displays next requested element
+function displayNext() {
+      var question = document.getElementById("qDiv");
+      // Handle the first question
+      if (question !== null){
+        question.remove();
+      }
+      // Ony continue if there are more question
+      if(questionCounter < questions.length){
+        var nextQuestion = createQuestionElement(questionCounter);
+        quiz.append(nextQuestion);
+        
+      }else { //Display the score after last question
+        
+        var initials = prompt("What are your initials?");
+        var scoreElem = displayScore(initials);
+        clearInterval(interval);
+        quiz.append(scoreElem);
+      
+        startBtn.style.display = "block";
+      }
+}
     
-    // Animates buttons on hover
-document.querySelector(".activeBtn").addEventListener('mouseenter', function () {
-  document.querySelector(".activeBtn").classList.add('active');
-});
-document.querySelector(".activeBtn").addEventListener('mouseleave', function () {
-  document.querySelector(".activeBtn").classList.remove('active');
-});
-    
-    // Creates and returns the div that contains the questions and 
-    // the answer selections
+//Construct the element for the Question and Answers
 function createQuestionElement(index) {
       var qDiv = document.createElement('div');
       qDiv.setAttribute("id" ,"qDiv");
       var question = questions[index].question;
       var qElement = document.createElement("h1");
       qElement.textContent = "Question " + (index +1) + ": " +  question;
-      qDiv.append(qElement);
+      qDiv.append(qElement); //Append the question element
     
       
-      var buttons = createButtons(index);
-      qDiv.append(buttons);
+      var buttons = createButtons(index); //Make the answer elements
+      qDiv.append(buttons); //append the answer list element
       
       return qDiv;
 }
     
-    // Creates a list of the answer choices as input buttons
+// Creates a list of the answer choices as input buttons
 function createButtons(index) {
       var radioList = document.createElement('ul');
       radioList.id = "qList"
@@ -108,40 +114,15 @@ function createButtons(index) {
       return radioList;
 }
     
-    
-    // Displays next requested element
-function displayNext() {
-        var question = document.getElementById("qDiv");
-        if (question !== null){
-          question.remove();
-        }
-    
-        if(questionCounter < questions.length){
-          var nextQuestion = createQuestionElement(questionCounter);
-          quiz.append(nextQuestion);
-          
-        }else {
-          var scoreElem = displayScore();
-
-          // var initials = prompt("What are your initials?");
-          quiz.append(scoreElem);
-          // var highScores = getScores(initials, document.getElementById("score").getAttribute('score'));
-          // quiz.append(highScores);
-          startBtn.style.display = "block";
-        }
-}
-    
-    // Gets previous scores and presents them with a text box element to be displayed
-function displayScore() {
+   
+// Gets previous scores and adds in the new one
+function displayScore(initials) {
       var results = document.createElement("div");
       var score = document.createElement("p");
       score.id = 'score';
-      var input = document.createElement("input");
-      input.setAttribute("type", "text");
-      input.setAttribute("id", "initials")
       score.setAttribute("id",'score');
       results.setAttribute("id", "results");
-      
+    
       var numCorrect = 0;
       for (var i = 0; i < selections.length; i++) {
         if (selections[i] === questions[i].correctAnswer) {
@@ -154,8 +135,9 @@ function displayScore() {
                    questions.length + ' right!!!';
       
 
-      results.append(score);  
-
+      results.append(score);
+      var histScores = getScores(initials, numCorrect);  
+      results.append(histScores);
       return results;
 }
 
@@ -183,4 +165,37 @@ function getScores (initials, score) {
       }
 
   return listEl;
+}
+
+
+//Timer functions
+
+var startTime, countAmt;
+
+function now() {
+  return ((new Date()).getTime());
+}
+
+function tick() {
+  var elapsed = now() - startTime;
+  var cnt = countAmt - elapsed;
+  if (cnt > 0) {
+    var width = (Math.floor((elapsed/countAmt)*100)) + "%";
+    console.log(cnt/1000);
+    console.log(width);
+    timeBar.style.width = width;
+  } else {
+    clearInterval(interval);
+    timeBar.style.width = '100%';
+    displayNext();
+  }
+}
+
+function startTimer(secs) {
+  clearInterval(interval);
+  timeBar.style.width = "0%";
+  countAmt = secs * 1000;
+  startTime = now();
+  interval = setInterval(tick, 1000);
+  return interval;  
 }
