@@ -160,7 +160,7 @@ function getScores (initials, score) {
        
       for (i=0; i < scores.records.length; i++) {
         var item = document.createElement("li");
-        item.textContent = scores.records[i].initials + " Got " + scores.records[i].score;
+        item.textContent = scores.records[i].initials + " Got " + scores.records[i].score + " Points!!";
         listEl.append(item);
       }
 
